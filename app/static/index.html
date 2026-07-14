@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps Learning Tracker</title>
+  <style>
+    :root {
+      --bg: #0f1117; --card: #1a1d27; --line: #2a2e3a;
+      --text: #e6e8ee; --muted: #8b90a0; --accent: #5eead4; --done: #4b5163;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; justify-content: center;
+      padding: 3rem 1rem;
+    }
+    .wrap { width: 100%; max-width: 560px; }
+    header { margin-bottom: 2rem; }
+    h1 { font-size: 1.5rem; letter-spacing: -0.02em; }
+    h1 .dot { color: var(--accent); }
+    p.sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.35rem; }
+    .add { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    input {
+      flex: 1; background: var(--card); border: 1px solid var(--line);
+      color: var(--text); padding: 0.7rem 0.9rem; border-radius: 8px;
+      font-family: inherit; font-size: 0.9rem;
+    }
+    input:focus { outline: none; border-color: var(--accent); }
+    button {
+      background: var(--accent); color: #0f1117; border: none;
+      padding: 0.7rem 1.1rem; border-radius: 8px; font-family: inherit;
+      font-weight: 600; cursor: pointer; font-size: 0.9rem;
+    }
+    button:hover { opacity: 0.9; }
+    ul { list-style: none; }
+    li {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: var(--card); border: 1px solid var(--line);
+      padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 0.5rem;
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    li:hover { border-color: var(--accent); }
+    li .box {
+      width: 18px; height: 18px; border: 2px solid var(--muted);
+      border-radius: 5px; flex-shrink: 0; display: grid; place-items: center;
+      font-size: 0.7rem; color: #0f1117;
+    }
+    li.done .box { background: var(--accent); border-color: var(--accent); }
+    li.done span { color: var(--done); text-decoration: line-through; }
+    .empty { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 2rem 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>DevOps Learning Tracker<span class="dot">.</span></h1>
+      <p class="sub">Track what you're learning. Check it off when it clicks.</p>
+    </header>
+    <div class="add">
+      <input id="field" placeholder="e.g. Docker multi-stage builds" />
+      <button onclick="addItem()">Add</button>
+    </div>
+    <ul id="list"></ul>
+  </div>
+
+  <script>
+    // Ask the kitchen for the current list and draw it.
+    async function load() {
+      const items = await (await fetch('/api/items')).json();
+      const list = document.getElementById('list');
+      if (items.length === 0) {
+        list.innerHTML = '<div class="empty">Nothing yet. Add your first item above.</div>';
+        return;
+      }
+      list.innerHTML = items.map(i =>
+        `<li class="${i.done ? 'done' : ''}" onclick="toggle(${i.id})">
+           <div class="box">${i.done ? '✓' : ''}</div>
+           <span>${i.text}</span>
+         </li>`
+      ).join('');
+    }
+    // Tell the kitchen to save a new item.
+    async function addItem() {
+      const field = document.getElementById('field');
+      if (!field.value.trim()) return;
+      await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: field.value.trim() })
+      });
+      field.value = '';
+      load();
+    }
+    // Tell the kitchen to check/uncheck an item.
+    async function toggle(id) {
+      await fetch(`/api/items/${id}/toggle`, { method: 'POST' });
+      load();
+    }
+    // Enter key adds too.
+    document.getElementById('field').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addItem();
+    });
+    load();
+  </script>
+</body>
+</html>
