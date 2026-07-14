@@ -1,0 +1,44 @@
+# The name shown on Github's Actions tab
+name: CI
+
+# When should the robot wake up?
+on:
+  push:
+    branches: [main]  # every push to main
+  pull_request:
+    branches: [main] # every PR aimed at main
+
+jobs:
+  build:
+    # Which machine? Github gives us a fresh, empty ubuntu box.
+    runs-on: ubuntu-latest
+    
+
+    steps:
+      # The box is empty - it gives us a fresh, empty ubuntu box.
+      - name: Check out the code
+        uses: actions/checkout@v4
+ 
+
+      # It has no python either. Install it.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+
+      # install our 3 libraries from the requirements.txt
+      - name: install dependancies
+        run: pip install -r requirements.txt
+
+
+      # smoke test: can the app even be imported without crashing?
+      # Catches syntax errors and bad imports before anything else.
+
+      - name: Check the app imports cleanly
+        run: python -c "from app.main import app; print('app imports OK')"
+
+
+      # The real check: Does the Docker image still build?
+      - name: Build the docker image
+        run: docker build -t devops-tracker:ci .
