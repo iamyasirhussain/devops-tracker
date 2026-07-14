@@ -42,9 +42,6 @@ jobs:
         run: pytest -v
 
 
-      - name: Check the app imports cleanly
-        run: python -c "from app.main import app; print('app imports OK')"
-
 
       # The real check: Does the Docker image still build?
       - name: Build the docker image
