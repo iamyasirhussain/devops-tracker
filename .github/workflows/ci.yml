@@ -12,7 +12,11 @@ jobs:
   build:
     # Which machine? Github gives us a fresh, empty ubuntu box.
     runs-on: ubuntu-latest
-    
+
+    # Least privilege: read the code, write packages. Nothing more.
+    permissions:
+      contents: read
+      packages: write    
 
     steps:
       # The box is empty - it gives us a fresh, empty ubuntu box.
@@ -43,6 +47,23 @@ jobs:
 
 
 
-      # The real check: Does the Docker image still build?
-      - name: Build the docker image
-        run: docker build -t devops-tracker:ci .
+      # Set up the modern builder (needed for multi-arch).
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+    
+      # Log in to Github's registry using the auto-privided short-lived token.
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{  github.actor  }}
+          password: ${{  secrets.GITHUB_TOKEN  }}
+      # Build for both architectures and push the bundle.
+      - name: Build and Push image
+        uses: docker/build-push-action@v6       
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/iamyasirhussain/devops-tracker:latest
