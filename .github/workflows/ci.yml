@@ -37,8 +37,10 @@ jobs:
         run: ruff check .
 
 
-      # smoke test: can the app even be imported without crashing?
-      # Catches syntax errors and bad imports before anything else.
+      # Real tests: prove the app behaves, not just that it starts.
+      - name: Run Tests
+        run: pytest -v
+
 
       - name: Check the app imports cleanly
         run: python -c "from app.main import app; print('app imports OK')"
