@@ -32,6 +32,11 @@ jobs:
         run: pip install -r requirements.txt
 
 
+      # spell-check the code: catches unused imports, undefined names, etc
+      - name: Lint with ruff
+        run: ruff check .
+
+
       # smoke test: can the app even be imported without crashing?
       # Catches syntax errors and bad imports before anything else.
 
