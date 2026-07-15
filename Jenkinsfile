@@ -1,30 +1,45 @@
 pipeline {
-    // Run the whole pipeline inside a Python 3.12 container.
-    // The HP box only has 3.10 — this makes the build independent of the host.
-    agent {
-        docker {
-            image 'python:3.12-slim'
-            // Run as root inside the container so pip can install freely.
-            args '-u root'
-        }
+    // No default agent — each stage chooses its own.
+    agent none
+
+    environment {
+        IMAGE = 'ghcr.io/iamyasirhussain/devops-tracker'
     }
 
     stages {
-        stage('Install dependencies') {
+        stage('Lint & Test') {
+            // Needs Python 3.12 — the host only has 3.10, so use a container.
+            agent {
+                docker {
+                    image 'python:3.12-slim'
+                    args '-u root'
+                }
+            }
             steps {
                 sh 'pip install --no-cache-dir -r requirements.txt'
-            }
-        }
-
-        stage('Lint') {
-            steps {
                 sh 'ruff check .'
+                sh 'pytest -v'
             }
         }
 
-        stage('Test') {
+        stage('Build & Push image') {
+            // Needs Docker, not Python — so run directly on the HP box.
+            agent any
             steps {
-                sh 'pytest -v'
+                // withCredentials injects the secret ONLY inside this block,
+                // and masks it in the logs.
+                withCredentials([usernamePassword(
+                    credentialsId: 'ghcr-creds',
+                    usernameVariable: 'GHCR_USER',
+                    passwordVariable: 'GHCR_TOKEN'
+                )]) {
+                    sh '''
+                        echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+                        docker build -t $IMAGE:jenkins .
+                        docker push $IMAGE:jenkins
+                        docker logout ghcr.io
+                    '''
+                }
             }
         }
     }
