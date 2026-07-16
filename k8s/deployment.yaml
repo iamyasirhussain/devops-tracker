@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: tracker
-        image: ghcr.io/iamyasirhussain/devops-tracker:b38d90e8bfd4925bb1f962677dcdf39b22f98296
+        image: ghcr.io/iamyasirhussain/devops-tracker:eb9c86851bb53199efa9efd61cad7fc3eac28c16
         envFrom:
         - configMapRef:
             name: tracker-config    # inject ALL keys as env vars
