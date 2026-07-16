@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tracker-config
+data:
+  REDIS_HOST: "redis"          # ← change this without touching the image
+  REDIS_PORT_NUMBER: "6379"

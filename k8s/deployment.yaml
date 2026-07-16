@@ -16,6 +16,9 @@ spec:
       - name: tracker
         image: devops-tracker:redis
         imagePullPolicy: Never
+        envFrom:
+        - configMapRef:
+            name: tracker-config    # inject ALL keys as env vars
         ports:
         - containerPort: 8000
         livenessProbe:
