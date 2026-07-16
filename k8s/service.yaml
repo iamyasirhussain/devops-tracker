@@ -1,10 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: tracker             # stable DNS name: pods can reach "tracker"
+  name: tracker
+  labels:
+    app: tracker            # so the ServiceMonitor can find this Service
 spec:
   selector:
     app: tracker            # ← routes to ANY pod wearing this label
   ports:
-  - port: 80                # the Service listens on 80
+  - name: http
+    port: 80                # the Service listens on 80
     targetPort: 8000        # forwards to 8000 inside the pod
