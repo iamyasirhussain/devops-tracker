@@ -14,8 +14,7 @@ spec:
     spec:
       containers:
       - name: tracker
-        image: devops-tracker:redis
-        imagePullPolicy: Never
+        image: ghcr.io/iamyasirhussain/devops-tracker:latest
         envFrom:
         - configMapRef:
             name: tracker-config    # inject ALL keys as env vars

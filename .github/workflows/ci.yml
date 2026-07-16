@@ -22,7 +22,7 @@ jobs:
 
     # Least privilege: read the code, write packages. Nothing more.
     permissions:
-      contents: read
+      contents: write
       packages: write    
 
     steps:
@@ -75,4 +75,14 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/iamyasirhussain/devops-tracker:latest
+          tags: ghcr.io/iamyasirhussain/devops-tracker:${{ github.sha }}
+
+      # Write the new tag back to Git. ArgoCD picks it up from there.
+      - name: Update deployment tag
+        run: |
+          sed -i "s|image: ghcr.io/iamyasirhussain/devops-tracker:.*|image: ghcr.io/iamyasirhussain/devops-tracker:${{ github.sha }}|" k8s/deployment.yaml
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add k8s/deployment.yaml
+          git diff --staged --quiet || git commit -m "ci: deploy ${{ github.sha }} [skip ci]"
+          git push
