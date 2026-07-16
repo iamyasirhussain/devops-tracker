@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: tracker              # what this Deployment is called
 spec:
-  replicas: 2                # ← I want 2 pods. Always.
+  replicas: 3                # ← I want 2 pods. Always.
   selector:
     matchLabels:
       app: tracker           # "the pods I manage wear this label"
