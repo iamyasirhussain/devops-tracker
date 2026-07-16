@@ -19,6 +19,13 @@ spec:
         envFrom:
         - configMapRef:
             name: tracker-config    # inject ALL keys as env vars
+        resources:
+          requests:           # what I need to be scheduled
+            cpu: 50m          # 50 millicores = 0.05 of a core
+            memory: 64Mi
+          limits:             # my hard ceiling
+            cpu: 200m
+            memory: 128Mi
         ports:
         - containerPort: 8000
         livenessProbe:
