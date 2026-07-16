@@ -50,6 +50,8 @@ jobs:
 
       # Real tests: prove the app behaves, not just that it starts.
       - name: Run Tests
+        env:
+          REDIS_HOST: localhost
         run: pytest -v
 
 
