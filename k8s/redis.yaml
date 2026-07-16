@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  serviceName: redis          # StatefulSets need a Service to give pods DNS names
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        # Tell Redis to actually save to disk (append-only file).
+        args: ["redis-server", "--appendonly", "yes"]
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: data
+          mountPath: /data    # where Redis writes its files
+  # ← THE IMPORTANT BIT: ask K8s for a disk, per pod, that outlives the pod.
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379

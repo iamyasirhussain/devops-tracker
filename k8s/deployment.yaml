@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracker              # what this Deployment is called
+spec:
+  replicas: 2                # ← I want 2 pods. Always.
+  selector:
+    matchLabels:
+      app: tracker           # "the pods I manage wear this label"
+  template:                  # ← the cookie-cutter for each pod
+    metadata:
+      labels:
+        app: tracker         # each pod gets this label (must match above)
+    spec:
+      containers:
+      - name: tracker
+        image: devops-tracker:redis
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /healthz     # "am I broken?" — no dependencies
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready       # "can I serve?" — checks Redis
+            port: 8000
+          initialDelaySeconds: 2
+          periodSeconds: 5
