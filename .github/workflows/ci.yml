@@ -13,6 +13,13 @@ jobs:
     # Which machine? Github gives us a fresh, empty ubuntu box.
     runs-on: ubuntu-latest
 
+    # Start a Redis for the tests to talk to.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
     # Least privilege: read the code, write packages. Nothing more.
     permissions:
       contents: read
